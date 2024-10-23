@@ -1,5 +1,9 @@
 import pandas as pd
 import pvlib
+import os
+from dotenv import load_dotenv
+
+load_dotenv(dotenv_path='.env')
 
 def get_solar_data(location, start_date, end_date):
     """
@@ -45,7 +49,8 @@ def main():
         solar_data = get_solar_data(location, start_date, end_date)
 
         # Save data to data/raw folder
-        solar_data.to_csv(f"data/raw/solar_data_{city.lower()}.csv", index=False)
+        path = os.getenv('project_path')
+        solar_data.to_csv(path + f"data/raw/solar_data_{city.lower()}.csv", index=False)
         print(f"Retrieved {len(solar_data)} records for solar data in {city}.")
 
 if __name__ == "__main__":

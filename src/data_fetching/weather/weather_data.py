@@ -1,10 +1,19 @@
 from meteostat import Point, Hourly
+import os
+from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv(dotenv_path='.env')
 
 def get_hourly_weather_data(latitude, longitude, start_date, end_date):
     """
     Fetches hourly weather data for a year from the Meteostat API for the specified coordinates.
     Returns wind speed, temperature, and humidity information.
     """
+
+    start_date = datetime.strptime(start_date, "%Y-%m-%d")
+    end_date = datetime.strptime(end_date, "%Y-%m-%d")
+
     # Pulling weather data
     location = Point(latitude, longitude)  # Determine coordinates
     data = Hourly(location, start_date, end_date)
@@ -30,8 +39,9 @@ def main():
         weather_data = get_hourly_weather_data(lat, lon, start_date, end_date)
 
         if not weather_data.empty:
+            path = os.getenv('project_path')
             print(f"Retrieved {len(weather_data)} hourly records for {city}.")
-            weather_data.to_csv(f"data/raw/{city}_hourly_weather.csv", index=True)
+            weather_data.to_csv(path + f"/data/raw/{city}_hourly_weather.csv", index=True)
         else:
             print(f"Weather data couldn't be retrieved for {city}.")
 
