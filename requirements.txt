@@ -1,0 +1,6 @@
+pandas
+requests
+python-dotenv
+meteostat
+yfinance
+pvlib
