@@ -4,3 +4,4 @@ python-dotenv
 meteostat
 yfinance
 pvlib
+pytz
