@@ -8,9 +8,18 @@ load_dotenv(dotenv_path='.env')
 def get_solar_data(location, start_date, end_date):
     """
     Retrieves solar energy data for a specified location and date range.
+
+    datetime: Indicates the date and time the data was collected. It is usually in UTC (Coordinated Universal Time) format and written as YYYY-MM-DD HH:MM:SS. This column determines the time zone of solar energy data.
+
+    dni (Direct Normal Irradiance): Indicates the direct solar radiation falling on a vertical surface. It is usually measured in watts/square meter (W/m²). DNI indicates the amount of sunlight passing through the atmosphere and reaching the surface directly and is a critical parameter for solar energy systems.
+
+    ghi (Global Horizontal Irradiance): Indicates the total solar radiation falling on a horizontal surface. Again measured in watts/square meter (W/m²). GHI includes the sum of direct sunlight (DNI) and diffuse sunlight (light scattered from the atmosphere). It is important for evaluating the performance of solar panels.
+
+    solar_zenith: Indicates the angle of the sun in the sky. It is measured in degrees (°) and indicates the height of the sun relative to the surface of the earth. A value of 0° means the sun is at its zenith, while a value of 90° means the sun is parallel to the horizon. The solar zenith angle has a significant impact on the efficiency of solar energy systems.
     """
+
     # Time zone
-    times = pd.date_range(start=start_date, end=end_date, freq='H', tz='Europe/Istanbul')
+    times = pd.date_range(start=start_date, end=end_date, freq='h', tz='Europe/Istanbul')
 
     # Solar module location
     latitude, longitude = location
