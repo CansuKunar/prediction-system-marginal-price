@@ -5,7 +5,7 @@ meteostat~=1.6.8
 yfinance~=0.2.46
 pvlib~=0.11.1
 pytz~=2024.2
-
+eptr2
 beautifulsoup4~=4.12.3
 google-auth-oauthlib~=1.2.1
 google-api-python-client~=2.149.0
