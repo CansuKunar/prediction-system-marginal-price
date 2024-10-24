@@ -50,7 +50,7 @@ def main():
 
         # Save data to data/raw folder
         path = os.getenv('project_path')
-        solar_data.to_csv(path + f"data/raw/solar_data_{city.lower()}.csv", index=False)
+        solar_data.to_csv(path + f"/data/raw/solar_data_{city.lower()}.csv", index=False)
         print(f"Retrieved {len(solar_data)} records for solar data in {city}.")
 
 if __name__ == "__main__":
