@@ -41,6 +41,11 @@ def fetch_epias_data(data_type, start_date, end_date):
 for key, columns in data_columns.items():
     df = fetch_epias_data(key, start_date, end_date)
     df = pd.DataFrame(df)  # Convert incoming data to DataFrame
+
+    # Convert 'date' and 'hour' columns to ensure consistency
+    df['date'] = pd.to_datetime(df['date']).dt.date  # Only retain date part
+    df['hour'] = pd.to_datetime(df['hour']).dt.time  # Extract only the time part
+
     df = df[columns]  # Select relevant columns
     dataframes[key] = df  # Save DataFrame to dictionary
 
