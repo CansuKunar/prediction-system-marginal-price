@@ -42,6 +42,12 @@ def get_hourly_weather_data(latitude, longitude, start_date, end_date):
     data = Hourly(location, start_date, end_date)
     data = data.fetch()
 
+    data['date'] = data.index.date
+    data['hour'] = data.index.time
+    data.reset_index(drop=True, inplace=True)
+
+    data = data[['date', 'hour', 'temp', 'dwpt', 'rhum', 'prcp', 'snow', 'wdir', 'wspd', 'wpgt', 'pres', 'tsun', 'coco']]
+
     return data
 
 def main():
@@ -64,7 +70,7 @@ def main():
         if not weather_data.empty:
             path = os.getenv('project_path')
             print(f"Retrieved {len(weather_data)} hourly records for {city}.")
-            weather_data.to_csv(path + f"/data/raw/{city}_hourly_weather.csv", index=True)
+            weather_data.to_csv(path + f"/data/raw/{city}_hourly_weather.csv", index=False)
         else:
             print(f"Weather data couldn't be retrieved for {city}.")
 
