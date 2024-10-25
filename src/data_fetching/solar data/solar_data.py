@@ -37,6 +37,10 @@ def get_solar_data(location, start_date, end_date):
         'solar_zenith': solar_position['apparent_elevation'],  # Sun's zenith angle
     })
 
+    solar_data['date'] = solar_data['datetime'].dt.date
+    solar_data['hour'] = solar_data['datetime'].dt.time
+    solar_data = solar_data[['date', 'hour', 'dni', 'ghi', 'solar_zenith']]
+
     return solar_data
 
 def main():
