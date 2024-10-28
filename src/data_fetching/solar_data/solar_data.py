@@ -75,5 +75,6 @@ def main():
     merged_solar_data = merge_solar_data(start_date, end_date)
 
 
-if __name__ == "_main_":
+
+if __name__ == "__main__":
     main()

@@ -71,5 +71,6 @@ def main():
     fetch_holiday_data(CLIENT_SECRET_FILE, start_date, end_date, output_file)
 
 
-if __name__ == "_main_":
+
+if __name__ == "__main__":
     main()

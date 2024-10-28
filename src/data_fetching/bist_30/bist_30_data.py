@@ -111,5 +111,6 @@ def main():
         print("BIST30 data couldn't be retrieved.")
 
 
-if __name__ == "_main_":
+
+if __name__ == "__main__":
     main()

@@ -110,5 +110,6 @@ def main():
     merged_weather_data = merge_weather_data(start_date, end_date)
 
 
-if __name__ == "_main_":
+
+if __name__ == "__main__":
     main()

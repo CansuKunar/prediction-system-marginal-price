@@ -108,6 +108,7 @@ def main():
 
         # Save to CSV with Date as index
         output_file = os.path.join(output_dir, "bist100_hourly_data.csv")
+        verify_filled_data(filled_data)
         filled_data.to_csv(output_file, index=True)
         print(f"Data saved to {output_file}")
 
@@ -118,5 +119,5 @@ def main():
         print("BIST100 data couldn't be retrieved.")
 
 
-if __name__ == "_main_":
+if __name__ == "__main__":
     main()

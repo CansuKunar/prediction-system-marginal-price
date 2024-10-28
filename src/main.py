@@ -190,7 +190,7 @@ def main():
   print("-" * 80)
 
   # Save to CSV
-  path = os.getenv('DATA_PATH')
+  path = os.getenv('project_path')
   all_data.to_csv(os.path.join(path, "data/raw/combined_data.csv"))
   print("All data saved to combined_data.csv")
 
