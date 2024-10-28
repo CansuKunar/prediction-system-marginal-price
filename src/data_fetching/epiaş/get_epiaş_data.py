@@ -48,19 +48,24 @@ def get_merged_epias_data(start_date, end_date):
         df = fetch_epias_data(key, start_date, end_date)
         df = pd.DataFrame(df)  # Convert incoming data to DataFrame
 
-        # Convert 'date' and 'hour' columns to ensure consistency
-        df['date'] = pd.to_datetime(df['date']).dt.date  # Only retain date part
-        df['hour'] = pd.to_datetime(df['hour']).dt.time  # Extract only the time part
+        # Convert 'date' column to datetime format, ignoring 'hour' column
+        df['datetime'] = pd.to_datetime(df['date']).dt.strftime('%Y-%m-%d %H:%M')
 
-        df = df[columns]  # Select relevant columns
+        # Drop original 'date' and 'hour' columns, keep only relevant columns
+        df = df[['datetime'] + columns[2:]]
         dataframes[key] = df  # Save DataFrame to dictionary
 
-
-    # Consolidate data based on columns 'date' and 'hour'
+        # Merge data on 'datetime' column
     merged_df = dataframes["mcp"]
     for key, df in dataframes.items():
         if key != "mcp":
-            merged_df = pd.merge(merged_df, df, on=["date", "hour"], how="outer")
+            merged_df = pd.merge(merged_df, df, on="datetime", how="outer")
+
+    # Rename duplicate 'net' columns
+    merged_df = merged_df.rename(columns={
+        "net": "upRegulationNet",
+        "net_dup": "downRegulationNet"
+    })
 
     return merged_df
 
