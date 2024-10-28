@@ -42,15 +42,17 @@ def get_hourly_weather_data(latitude, longitude, start_date, end_date):
     data = Hourly(location, start_date, end_date)
     data = data.fetch()
 
-    data['date'] = data.index.date
-    data['hour'] = data.index.time
-    data.reset_index(drop=True, inplace=True)
-
-    data = data[['date', 'hour', 'temp', 'dwpt', 'rhum', 'prcp', 'snow', 'wdir', 'wspd', 'wpgt', 'pres', 'tsun', 'coco']]
+    data['datetime'] = data.index.strftime('%Y-%m-%d %H:%M')
+    data.set_index('datetime', inplace=True)
 
     return data
 
-def main():
+
+def merge_weather_data(start_date, end_date):
+    """
+    Merges weather data from multiple locations into a single DataFrame,
+    using datetime as the index and renaming columns appropriately.
+    """
     # Coordinates of cities
     cities = {
         'Istanbul': (41.0082, 28.9784),
@@ -60,20 +62,51 @@ def main():
         'Bursa': (40.1826, 29.0668)
     }
 
-    start_date = "2023-10-01"
-    end_date = "2024-10-01"
+    merged_data = None
 
     for city, (lat, lon) in cities.items():
         print(f"Fetching weather data for {city}...")
         weather_data = get_hourly_weather_data(lat, lon, start_date, end_date)
 
         if not weather_data.empty:
-            path = os.getenv('project_path')
-            print(f"Retrieved {len(weather_data)} hourly records for {city}.")
-            weather_data.to_csv(path + f"/data/raw/{city}_hourly_weather.csv", index=False)
+            # Rename columns to include city name
+            weather_data.rename(columns={
+                'temp': f'{city.lower()}_temp',
+                'dwpt': f'{city.lower()}_dwpt',
+                'rhum': f'{city.lower()}_rhum',
+                'prcp': f'{city.lower()}_prcp',
+                'snow': f'{city.lower()}_snow',
+                'wdir': f'{city.lower()}_wdir',
+                'wspd': f'{city.lower()}_wspd',
+                'wpgt': f'{city.lower()}_wpgt',
+                'pres': f'{city.lower()}_pres',
+                'tsun': f'{city.lower()}_tsun',
+                'coco': f'{city.lower()}_coco'
+            }, inplace=True)
+
+            # Merge with the existing DataFrame
+            if merged_data is None:
+                merged_data = weather_data
+            else:
+                merged_data = merged_data.join(weather_data, how='outer')
         else:
             print(f"Weather data couldn't be retrieved for {city}.")
 
+    # Save to CSV
+    path = os.getenv('project_path')
+    merged_data.to_csv(path + "/data/raw/merged_hourly_weather_data.csv", index=True)
+    print("Merged weather data saved to 'merged_hourly_weather_data.csv'.")
+
+    return merged_data
+
+
+def main():
+    start_date = "2023-10-01"
+    end_date = "2024-10-01"
+
+    # Merge weather data
+    merged_weather_data = merge_weather_data(start_date, end_date)
+
+
 if __name__ == "__main__":
     main()
-
