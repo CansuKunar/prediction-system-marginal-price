@@ -37,13 +37,15 @@ def get_solar_data(location, start_date, end_date):
         'solar_zenith': solar_position['apparent_elevation'],  # Sun's zenith angle
     })
 
-    solar_data['date'] = solar_data['datetime'].dt.date
-    solar_data['hour'] = solar_data['datetime'].dt.time
-    solar_data = solar_data[['date', 'hour', 'dni', 'ghi', 'solar_zenith']]
+    solar_data['datetime'] = solar_data['datetime'].dt.strftime('%Y-%m-%d %H:%M')
 
     return solar_data
 
-def main():
+def merge_solar_data(start_date, end_date):
+    """
+    Merges solar data from multiple locations into a single DataFrame,
+    using datetime as the index and renaming columns appropriately.
+    """
     # Location information (lat, lon)
     locations = {
         'Istanbul': (41.0082, 28.9784),
@@ -53,18 +55,45 @@ def main():
         'Bursa': (40.1826, 29.0664)
     }
 
-    # Date range
-    start_date = "2023-10-01"
-    end_date = "2024-10-01"
+    merged_data = None
 
     for city, location in locations.items():
         print(f"Fetching solar data for {city}...")
         solar_data = get_solar_data(location, start_date, end_date)
 
-        # Save data to data/raw folder
-        path = os.getenv('project_path')
-        solar_data.to_csv(path + f"/data/raw/solar_data_{city.lower()}.csv", index=False)
-        print(f"Retrieved {len(solar_data)} records for solar data in {city}.")
+        # Set 'datetime' as index
+        solar_data.set_index('datetime', inplace=True)
+
+        # Rename columns
+        solar_data.rename(columns={
+            'dni': f'{city.lower()}_dni',
+            'ghi': f'{city.lower()}_ghi',
+            'solar_zenith': f'{city.lower()}_solar_zenith'
+        }, inplace=True)
+
+        # Merge with the existing DataFrame
+        if merged_data is None:
+            merged_data = solar_data
+        else:
+            merged_data = merged_data.join(solar_data, how='outer')
+
+    # Reset index to save datetime as a column
+    merged_data.reset_index(inplace=True)
+
+    # Save to CSV
+    path = os.getenv('project_path')
+    merged_data.to_csv(path + "/data/raw/merged_solar_data.csv", index=False)
+    print("Merged solar data saved to 'merged_solar_data.csv'.")
+
+    return merged_data
+
+def main():
+    # Date range
+    start_date = "2023-10-01"
+    end_date = "2024-10-01"
+
+    # Merge solar data
+    merged_solar_data = merge_solar_data(start_date, end_date)
 
 if __name__ == "__main__":
     main()
