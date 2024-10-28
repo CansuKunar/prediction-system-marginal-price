@@ -7,7 +7,8 @@ import os
 
 load_dotenv(dotenv_path='.env')
 
-def fetch_and_save_holiday_data(client_secret_file, start_date, end_date, output_file):
+
+def fetch_holiday_data(client_secret_file, start_date, end_date):
     """
     Fetches holiday data from Google Calendar API and saves it as hourly data to a CSV file.
 
@@ -46,20 +47,29 @@ def fetch_and_save_holiday_data(client_secret_file, start_date, end_date, output
         date_str = current_time.strftime('%Y-%m-%d')
         is_holiday = date_str in holiday_dates
         hourly_data.append({
-            'datetime': current_time,
+            'datetime': current_time.strftime('%Y-%m-%d %H:%M'),
             'is_holiday': is_holiday
         })
         current_time += timedelta(hours=1)
 
     df = pd.DataFrame(hourly_data)
-    df.to_csv(output_file, index=False)
+    # datetime sütununu index yap ve ismini Date olarak değiştir
+    df.set_index('datetime', inplace=True)
+    df.index.name = 'datetime'
 
-    print(f"Data saved to {output_file}")
+    return df
 
-# Example usage
-CLIENT_SECRET_FILE = os.getenv('CLIENT_SECRET_FILE')
-start_date = datetime(2023, 10, 1)
-end_date = datetime(2024, 10, 1)
-output_file = os.getenv('DATA_PATH') + '/data/raw/hourly_holiday_data.csv'
 
-fetch_and_save_holiday_data(CLIENT_SECRET_FILE, start_date, end_date, output_file)
+
+def main():
+    # Example usage
+    CLIENT_SECRET_FILE = os.getenv('CLIENT_SECRET_FILE')
+    start_date = datetime(2023, 10, 1)
+    end_date = datetime(2024, 10, 1)
+    output_file = os.getenv('DATA_PATH') + '/data/raw/hourly_holiday_data.csv'
+
+    fetch_holiday_data(CLIENT_SECRET_FILE, start_date, end_date, output_file)
+
+
+if __name__ == "_main_":
+    main()

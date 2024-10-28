@@ -63,8 +63,8 @@ def get_merged_epias_data(start_date, end_date):
 
     # Rename duplicate 'net' columns
     merged_df = merged_df.rename(columns={
-        "net": "upRegulationNet",
-        "net_dup": "downRegulationNet"
+        "net_x": "upRegulationNet",
+        "net_y": "downRegulationNet"
     })
 
     return merged_df
@@ -74,7 +74,7 @@ def main():
     merged_epias_data = get_merged_epias_data(start_date, end_date)
 
     # Save the merged data to a CSV file
-    path = os.getenv('project_path')
+    path = os.getenv('DATA_PATH')
     merged_epias_data.to_csv(path + "/data/raw/merged_epias_data.csv", index=False)
     print("Merged EPIAŞ data saved to CSV.")
 

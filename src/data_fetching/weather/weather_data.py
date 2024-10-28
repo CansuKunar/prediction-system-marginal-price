@@ -1,9 +1,7 @@
 from meteostat import Point, Hourly
-import os
 from datetime import datetime
-from dotenv import load_dotenv
+import pandas as pd
 
-load_dotenv(dotenv_path='.env')
 
 def get_hourly_weather_data(latitude, longitude, start_date, end_date):
     """
@@ -50,10 +48,8 @@ def get_hourly_weather_data(latitude, longitude, start_date, end_date):
 
 def merge_weather_data(start_date, end_date):
     """
-    Merges weather data from multiple locations into a single DataFrame,
-    using datetime as the index and renaming columns appropriately.
+    Merges weather data from multiple locations into a single DataFrame.
     """
-    # Coordinates of cities
     cities = {
         'Istanbul': (41.0082, 28.9784),
         'Izmir': (38.4192, 27.1287),
@@ -92,10 +88,16 @@ def merge_weather_data(start_date, end_date):
         else:
             print(f"Weather data couldn't be retrieved for {city}.")
 
-    # Save to CSV
-    path = os.getenv('project_path')
-    merged_data.to_csv(path + "/data/raw/merged_hourly_weather_data.csv", index=True)
-    print("Merged weather data saved to 'merged_hourly_weather_data.csv'.")
+    # Ensure the index is properly formatted before saving
+    if merged_data is not None:
+        # Check if index is already datetime
+        if not isinstance(merged_data.index, pd.DatetimeIndex):
+            # Convert index to datetime if it's not already
+            merged_data.index = pd.to_datetime(merged_data.index)
+
+        # Format index to desired string format
+        merged_data.index = merged_data.index.strftime('%Y-%m-%d %H:%M')
+        merged_data.index.name = 'Date'
 
     return merged_data
 
@@ -108,5 +110,5 @@ def main():
     merged_weather_data = merge_weather_data(start_date, end_date)
 
 
-if __name__ == "__main__":
+if __name__ == "_main_":
     main()

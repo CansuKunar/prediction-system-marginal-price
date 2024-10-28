@@ -5,12 +5,13 @@ from dotenv import load_dotenv
 import pandas as pd
 
 load_dotenv(dotenv_path='.env')
-def fill_missing_hours(data):
 
+
+def fill_missing_hours(data):
     """
     It fills the hours from 19:00 to 10:00 for each day with the data at 18:00.
+    Additionally, it fills the weekend with the last available data from Friday.
     """
-
     filled_data = []
     grouped = data.groupby(data.index.date)
 
@@ -30,7 +31,20 @@ def fill_missing_hours(data):
             full_day_data = pd.concat([day_data, fill_data])
             filled_data.append(full_day_data)
 
-    return pd.concat(filled_data)
+            # Check if the current day is Friday
+            if pd.Timestamp(date).weekday() == 4:  # 4 corresponds to Friday
+                # Fill Saturday and Sunday with Friday's last data
+                weekend_dates = pd.date_range(start=f"{next_day}", end=f"{next_day + pd.Timedelta(days=2)} 09:00", freq='h',
+                                              tz='Europe/Istanbul')
+                weekend_fill_data = pd.DataFrame([last_value] * len(weekend_dates), index=weekend_dates)
+                filled_data.append(weekend_fill_data)
+
+    conc_data = pd.concat(filled_data)
+    # Format index to desired string format and set name to 'Date'
+    conc_data.index = conc_data.index.strftime('%Y-%m-%d %H:%M')
+    conc_data.index.name = 'datetime'
+    return conc_data
+
 
 def get_bist100_data(start_date, end_date):
     """
@@ -39,25 +53,49 @@ def get_bist100_data(start_date, end_date):
     """
     # BIST100 symbol
     symbol = 'XU100.IS'  # Yahoo Finance symbol for BIST100
-
-    # Data extraction
     data = yf.download(symbol, start=start_date, end=end_date, interval='1h')
 
-    # Set time zone
     istanbul_tz = pytz.timezone('Europe/Istanbul')
     data.index = data.index.tz_convert(istanbul_tz)
 
     data.index = data.index.ceil('h')
+    data = data[(data.index >= pd.Timestamp(start_date, tz=istanbul_tz)) &
+                (data.index <= pd.Timestamp(end_date, tz=istanbul_tz))]
+
+    # Remove ticker level from columns
+    data.columns = data.columns.droplevel('Ticker')
 
     return data
 
+def verify_filled_data(filled_data):
+    # Check the time for each day
+    daily_check = filled_data.groupby(filled_data.index.str[:10]).count()
+    print("Number of records per day:")
+    print(daily_check.head())
+
+    # Weekday/end control
+    dates = pd.to_datetime(filled_data.index)
+    weekday_counts = filled_data.groupby(dates.strftime('%A')).count()
+    print("\nRecords by day of week:")
+    print(weekday_counts)
+
+    # Time range control
+    hours = pd.to_datetime(filled_data.index).hour
+    hour_counts = filled_data.groupby(hours).count()
+    print("\nRecords by hour:")
+    print(hour_counts)
 
 def main():
-
     path = os.getenv('DATA_PATH')
-    print(path)
+    if not path:
+        print("DATA_PATH environment variable is not set.")
+        return
 
-    start_date =  "2023-10-01"
+    # Ensure the directory exists
+    output_dir = os.path.join(path, "data/raw")
+    os.makedirs(output_dir, exist_ok=True)
+
+    start_date = "2023-9-28"
     end_date = "2024-10-01"
 
     print("Fetching BIST100 data...")
@@ -67,10 +105,18 @@ def main():
         print(f"Retrieved {len(bist100_data)} hourly records for BIST100.")
 
         filled_data = fill_missing_hours(bist100_data)
-        filled_data.to_csv(path+"/data/raw/bist100_hourly_data.csv", index=True)
+
+        # Save to CSV with Date as index
+        output_file = os.path.join(output_dir, "bist100_hourly_data.csv")
+        filled_data.to_csv(output_file, index=True)
+        print(f"Data saved to {output_file}")
+
+        # Display first few rows to verify format
+        print("\nFirst few rows of the data:")
+        print(filled_data.head())
     else:
         print("BIST100 data couldn't be retrieved.")
 
 
-if __name__ == "__main__":
+if __name__ == "_main_":
     main()

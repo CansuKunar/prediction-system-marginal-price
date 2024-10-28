@@ -1,23 +1,11 @@
 import pandas as pd
 import pvlib
-import os
-from dotenv import load_dotenv
 
-load_dotenv(dotenv_path='.env')
 
 def get_solar_data(location, start_date, end_date):
     """
     Retrieves solar energy data for a specified location and date range.
-
-    datetime: Indicates the date and time the data was collected. It is usually in UTC (Coordinated Universal Time) format and written as YYYY-MM-DD HH:MM:SS. This column determines the time zone of solar energy data.
-
-    dni (Direct Normal Irradiance): Indicates the direct solar radiation falling on a vertical surface. It is usually measured in watts/square meter (W/m²). DNI indicates the amount of sunlight passing through the atmosphere and reaching the surface directly and is a critical parameter for solar energy systems.
-
-    ghi (Global Horizontal Irradiance): Indicates the total solar radiation falling on a horizontal surface. Again measured in watts/square meter (W/m²). GHI includes the sum of direct sunlight (DNI) and diffuse sunlight (light scattered from the atmosphere). It is important for evaluating the performance of solar panels.
-
-    solar_zenith: Indicates the angle of the sun in the sky. It is measured in degrees (°) and indicates the height of the sun relative to the surface of the earth. A value of 0° means the sun is at its zenith, while a value of 90° means the sun is parallel to the horizon. The solar zenith angle has a significant impact on the efficiency of solar energy systems.
     """
-
     # Time zone
     times = pd.date_range(start=start_date, end=end_date, freq='h', tz='Europe/Istanbul')
 
@@ -29,17 +17,18 @@ def get_solar_data(location, start_date, end_date):
     dni = pvlib.irradiance.get_extra_radiation(times)  # Daily normal radiation
     ghi = dni * 0.77  # Calculate global horizontal irradiance with hypothetical rate
 
-
     solar_data = pd.DataFrame({
-        'datetime': times,
         'dni': dni,
         'ghi': ghi,
         'solar_zenith': solar_position['apparent_elevation'],  # Sun's zenith angle
-    })
+    }, index=times)
 
-    solar_data['datetime'] = solar_data['datetime'].dt.strftime('%Y-%m-%d %H:%M')
+    # Format index to desired string format
+    solar_data.index = solar_data.index.strftime('%Y-%m-%d %H:%M')
+    solar_data.index.name = 'datetime'
 
     return solar_data
+
 
 def merge_solar_data(start_date, end_date):
     """
@@ -61,9 +50,6 @@ def merge_solar_data(start_date, end_date):
         print(f"Fetching solar data for {city}...")
         solar_data = get_solar_data(location, start_date, end_date)
 
-        # Set 'datetime' as index
-        solar_data.set_index('datetime', inplace=True)
-
         # Rename columns
         solar_data.rename(columns={
             'dni': f'{city.lower()}_dni',
@@ -77,15 +63,8 @@ def merge_solar_data(start_date, end_date):
         else:
             merged_data = merged_data.join(solar_data, how='outer')
 
-    # Reset index to save datetime as a column
-    merged_data.reset_index(inplace=True)
-
-    # Save to CSV
-    path = os.getenv('project_path')
-    merged_data.to_csv(path + "/data/raw/merged_solar_data.csv", index=False)
-    print("Merged solar data saved to 'merged_solar_data.csv'.")
-
     return merged_data
+
 
 def main():
     # Date range
@@ -95,5 +74,6 @@ def main():
     # Merge solar data
     merged_solar_data = merge_solar_data(start_date, end_date)
 
-if __name__ == "__main__":
+
+if __name__ == "_main_":
     main()
