@@ -9,40 +9,88 @@ load_dotenv(dotenv_path='.env')
 
 def fill_missing_hours(data):
     """
-    It fills the hours from 19:00 to 10:00 for each day with the data at 18:00.
-    Additionally, it fills the weekend with the last available data from Friday.
+    Fills missing hours and dates in the data:
+    - Fills hours from 19:00 to 10:00 with the last available data at 18:00
+    - Fills weekends with Friday's last data
+    - Fills any missing days or hours with the last available data
     """
+    # Create complete date range
+    start_date = data.index.min()
+    end_date = data.index.max()
+    complete_range = pd.date_range(start=start_date.date(),
+                                   end=end_date.date(),
+                                   freq='D',
+                                   tz='Europe/Istanbul')
+
     filled_data = []
-    grouped = data.groupby(data.index.date)
 
-    for date, group in grouped:
-        day_data = group.between_time('10:00', '18:00')
+    for date in complete_range:
+        # Get data for current day
+        day_data = data[data.index.date == date.date()].between_time('10:00', '19:00')
 
-        if not day_data.empty:
-            # Get the last data at 18:00
+        if day_data.empty:
+            # If no data for this day, use the last available data
+            if filled_data:
+                last_value = filled_data[-1].iloc[-1]
+            else:
+                # If this is the first day and it's empty, use the next available data
+                next_available = data[data.index > date].iloc[0] if not data.empty else None
+                if next_available is None:
+                    continue
+                last_value = next_available
+        else:
             last_value = day_data.iloc[-1]
 
-            # Fill in between 19:00 - 09:00
-            next_day = pd.Timestamp(date) + pd.Timedelta(days=1)
-            times_to_fill = pd.date_range(start=f"{date} 18:00", end=f"{next_day} 09:00", freq='h',
-                                          tz='Europe/Istanbul')[1:]
-            fill_data = pd.DataFrame([last_value] * len(times_to_fill), index=times_to_fill)
+        # Create full day schedule
+        business_hours = pd.date_range(start=f"{date.date()} 10:00",
+                                       end=f"{date.date()} 19:00",
+                                       freq='h',
+                                       tz='Europe/Istanbul')
 
-            full_day_data = pd.concat([day_data, fill_data])
-            filled_data.append(full_day_data)
+        # Fill business hours
+        day_filled = pd.DataFrame(index=business_hours, columns=data.columns)
+        for hour in business_hours:
+            if hour in day_data.index:
+                day_filled.loc[hour] = day_data.loc[hour].values
+            else:
+                day_filled.loc[hour] = last_value.values
 
-            # Check if the current day is Friday
-            if pd.Timestamp(date).weekday() == 4:  # 4 corresponds to Friday
-                # Fill Saturday and Sunday with Friday's last data
-                weekend_dates = pd.date_range(start=f"{next_day}", end=f"{next_day + pd.Timedelta(days=2)} 09:00", freq='h',
-                                              tz='Europe/Istanbul')
-                weekend_fill_data = pd.DataFrame([last_value] * len(weekend_dates), index=weekend_dates)
-                filled_data.append(weekend_fill_data)
+        # Fill after-hours (19:00 - 09:00 next day)
+        next_day = date + pd.Timedelta(days=1)
+        after_hours = pd.date_range(start=f"{date.date()} 18:00",
+                                    end=f"{next_day.date()} 09:00",
+                                    freq='h',
+                                    tz='Europe/Istanbul')[1:]
 
+        after_hours_data = pd.DataFrame([last_value.values] * len(after_hours),
+                                        index=after_hours,
+                                        columns=data.columns)
+
+        full_day_data = pd.concat([day_filled, after_hours_data])
+        filled_data.append(full_day_data)
+
+        # Fill weekends
+        if date.weekday() == 4:  # Friday
+            weekend_dates = pd.date_range(start=next_day,
+                                          end=next_day + pd.Timedelta(days=2),
+                                          freq='h',
+                                          tz='Europe/Istanbul')
+            weekend_data = pd.DataFrame([last_value.values] * len(weekend_dates),
+                                        index=weekend_dates,
+                                        columns=data.columns)
+            filled_data.append(weekend_data)
+
+    # Concatenate all data
     conc_data = pd.concat(filled_data)
-    # Format index to desired string format and set name to 'Date'
+
+    # Remove duplicates that might occur at day boundaries
+    conc_data = conc_data[~conc_data.index.duplicated(keep='first')]
+
+    # Sort index and format
+    conc_data = conc_data.sort_index()
     conc_data.index = conc_data.index.strftime('%Y-%m-%d %H:%M')
     conc_data.index.name = 'datetime'
+
     return conc_data
 
 def get_bist30_data(start_date, end_date):
