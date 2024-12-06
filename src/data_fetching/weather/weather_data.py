@@ -104,10 +104,11 @@ def merge_weather_data(start_date, end_date):
 
 def main():
     start_date = "2023-10-01"
-    end_date = "2024-10-01"
+    end_date = "2024-11-02"
 
     # Merge weather data
     merged_weather_data = merge_weather_data(start_date, end_date)
+    print(merged_weather_data.tail(10))
 
 
 

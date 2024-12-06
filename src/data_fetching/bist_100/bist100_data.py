@@ -144,7 +144,7 @@ def main():
     os.makedirs(output_dir, exist_ok=True)
 
     start_date = "2023-9-28"
-    end_date = "2024-10-01"
+    end_date = "2024-11-01"
 
     print("Fetching BIST100 data...")
     bist100_data = get_bist100_data(start_date, end_date)
@@ -153,6 +153,7 @@ def main():
         print(f"Retrieved {len(bist100_data)} hourly records for BIST100.")
 
         filled_data = fill_missing_hours(bist100_data)
+        print(filled_data.tail(20))
 
         # Save to CSV with Date as index
         output_file = os.path.join(output_dir, "bist100_hourly_data.csv")

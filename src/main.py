@@ -57,7 +57,7 @@ def main():
 
   # Create dictionary of dataframes and check for None values
   dfs = {
-      'bist30': bist30_data,
+      #'bist30': bist30_data,
       'bist100': bist100_data,
       'epias': merged_epias_data,
       'holiday': holiday_data,

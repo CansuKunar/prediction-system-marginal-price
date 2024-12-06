@@ -68,7 +68,8 @@ def main():
     end_date = datetime(2024, 10, 1)
     output_file = os.getenv('DATA_PATH') + '/data/raw/hourly_holiday_data.csv'
 
-    fetch_holiday_data(CLIENT_SECRET_FILE, start_date, end_date, output_file)
+    df = fetch_holiday_data(CLIENT_SECRET_FILE, start_date, end_date, output_file)
+    print(df)
 
 
 

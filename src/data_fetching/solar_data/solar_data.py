@@ -69,10 +69,11 @@ def merge_solar_data(start_date, end_date):
 def main():
     # Date range
     start_date = "2023-10-01"
-    end_date = "2024-10-01"
+    end_date = "2024-11-02"
 
     # Merge solar data
     merged_solar_data = merge_solar_data(start_date, end_date)
+    print(merged_solar_data.tail(5))
 
 
 

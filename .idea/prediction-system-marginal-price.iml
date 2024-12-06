@@ -7,4 +7,7 @@
     <orderEntry type="jdk" jdkName="Python 3.12 (prediction-system-marginal-price)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
+  <component name="PackageRequirementsSettings">
+    <option name="requirementsPath" value="C:\Users\Salih\Documents\GitHub\prediction-system-marginal-price\requirements.txt" />
+  </component>
 </module>
