@@ -41,7 +41,6 @@ def main():
     gb = GradientBoostingModel(n_estimators=100, learning_rate=0.1, max_depth=5)
 
     # Fit models
-    X_train_lstm = X_train.values.reshape((X_train.shape[0], X_train.shape[1], 1))
     arima.fit(y_train)
     xgb.fit(X_train, y_train)
     xgb_preds = xgb.predict(X_test)
