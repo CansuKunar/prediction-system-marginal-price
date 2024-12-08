@@ -30,21 +30,22 @@ def main():
 
     # Define parameter grids
     param_grid_xgb = {
-        'n_estimators': [100, 200, 300],
-        'max_depth': [3, 5, 7],
-        'learning_rate': [0.01, 0.1, 0.2]
+        'n_estimators': [100, 200, 300, 400, 500,600,700,800,900,1000],
+        'learning_rate': [0.01, 0.05, 0.1, 0.2],
+        'max_depth': [3, 5, 7, 9],
     }
 
     param_grid_rf = {
-        'n_estimators': [100, 200, 300],
-        'max_depth': [10, 20, 30],
-        'min_samples_split': [2, 5, 10]
+        'bootstrap': [True, False],
+        'max_depth': [3, 5, 7, 9,10, 20, 30, 40, 50, 60, 70, 80, 90, 100, None],
+        'max_features': ['auto', 'sqrt'],
+        'n_estimators': [200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000]    
     }
 
     param_grid_gb = {
-        'n_estimators': [100, 200, 300],
-        'learning_rate': [0.01, 0.1, 0.2],
-        'max_depth': [3, 5, 7]
+        'n_estimators': [100, 200, 300, 400, 500,600,700,800,900,1000],
+        'learning_rate': [0.01, 0.05, 0.1, 0.2],
+        'max_depth': [3, 5, 7, 9],
     }
 
     # Initialize models
@@ -55,13 +56,16 @@ def main():
     # Define TimeSeriesSplit
     tscv = TimeSeriesSplit(n_splits=5)
 
+    #mape scorer
+    mape_scorer = make_scorer(mean_absolute_percentage_error, greater_is_better=False)
+
     # Initialize GridSearchCV for each model with TimeSeriesSplit and MAPE
     grid_xgb = GridSearchCV(estimator=xgb.model, param_grid=param_grid_xgb, 
-                            cv=tscv, scoring='neg_mean_absolute_error', n_jobs=-1,verbose=100)
+                            cv=tscv, scoring=mape_scorer, n_jobs=-1,verbose=2)
     grid_rf = GridSearchCV(estimator=rf.model, param_grid=param_grid_rf, 
-                           cv=tscv, scoring='neg_mean_absolute_error', n_jobs=-1,verbose=100)
+                           cv=tscv, scoring=mape_scorer, n_jobs=-1,verbose=2)
     grid_gb = GridSearchCV(estimator=gb.model, param_grid=param_grid_gb, 
-                           cv=tscv, scoring='neg_mean_absolute_error', n_jobs=-1,verbose=100)
+                           cv=tscv, scoring=mape_scorer, n_jobs=-1,verbose=2)
 
     # Fit GridSearchCV
     grid_xgb.fit(X_train, y_train)
@@ -94,7 +98,7 @@ def main():
     print('XGBoost Best Params:', grid_xgb.best_params_)
     print('XGBoost MAPE:', xgb_mape)
     print('XGBoost MAE Percentage:', xgb_mae_percentage)
-    
+
     print('Random Forest Best Params:', grid_rf.best_params_)
     print('Random Forest MAPE:', rf_mape)
     print('Random Forest MAE Percentage:', rf_mae_percentage)
