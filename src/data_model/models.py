@@ -275,6 +275,8 @@ class LSTMModel:
             callbacks=[early_stop]
         )
         print("LSTM model trained.")
+    def predict(self, X):
+        return self.model.predict(X)
 
 def main():
     # Initialize DataLoader
