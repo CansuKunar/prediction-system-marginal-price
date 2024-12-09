@@ -22,7 +22,7 @@ def main():
     # Correlation Analysis
     analyzer = CorrelationAnalyzer(df_with_lags, target='systemMarginalPrice')
     top_corr_df_20 = analyzer.compute_correlations()
-    #analyzer.plot_correlations(top_corr_df_20)
+    analyzer.plot_correlations(top_corr_df_20)
 
     # Prepare features and target
     X = df_with_lags.drop(columns=['systemMarginalPrice'])
@@ -44,7 +44,6 @@ def main():
     arima.fit(y_train)
     xgb.fit(X_train, y_train)
     xgb_preds = xgb.predict(X_test)
-    xgb.plot_results(y_test, xgb_preds)
     sarima.fit(y_train)
     rf.fit(X_train, y_train)
     gb.fit(X_train, y_train)               

@@ -61,11 +61,11 @@ def main():
 
     # Initialize GridSearchCV for each model with TimeSeriesSplit and MAPE
     grid_xgb = GridSearchCV(estimator=xgb.model, param_grid=param_grid_xgb, 
-                            cv=tscv, scoring=mape_scorer, n_jobs=-1,verbose=2)
+                            cv=tscv, scoring=mape_scorer, n_jobs=-1,verbose=1)
     grid_rf = GridSearchCV(estimator=rf.model, param_grid=param_grid_rf, 
-                           cv=tscv, scoring=mape_scorer, n_jobs=-1,verbose=2)
+                           cv=tscv, scoring=mape_scorer, n_jobs=-1,verbose=1)
     grid_gb = GridSearchCV(estimator=gb.model, param_grid=param_grid_gb, 
-                           cv=tscv, scoring=mape_scorer, n_jobs=-1,verbose=2)
+                           cv=tscv, scoring=mape_scorer, n_jobs=-1,verbose=1)
 
     # Fit GridSearchCV
     grid_xgb.fit(X_train, y_train)

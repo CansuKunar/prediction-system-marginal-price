@@ -195,7 +195,30 @@ def get_merged_epias_data(start_date, end_date):
 def main():
     # Fetch and merge EPIAŞ data
     merged_epias_data = get_merged_epias_data(start_date, end_date)
+        # Detect and correct sudden changes
+    smp = merged_epias_data['systemMarginalPrice']
+    pct_change = abs(smp.pct_change()) * 100  # Calculate percentage change
+    sudden_changes = pct_change > 100  # Find changes greater than 100%
     
+    # Report and correct sudden changes
+    if sudden_changes.any():
+        print("\nSudden Change Report:")
+        print("Datetime | Previous Value | Current Value | Change %")
+        print("-" * 60)
+        
+        for idx in merged_epias_data.index[sudden_changes]:
+            prev_idx = idx - pd.Timedelta(hours=1)
+            if prev_idx in merged_epias_data.index:
+                prev_value = smp[prev_idx]
+                current_value = smp[idx]
+                change_pct = pct_change[idx]
+                
+                print(f"{idx} | {prev_value:.2f} | {current_value:.2f} | {change_pct:.2f}%")
+                
+                # Correct sudden change - assign previous value
+                merged_epias_data.loc[idx, 'systemMarginalPrice'] = prev_value
+
+
     # Detect outliers in systemMarginalPrice using IQR method
     Q1 = merged_epias_data['systemMarginalPrice'].quantile(0.25)
     Q3 = merged_epias_data['systemMarginalPrice'].quantile(0.75)
@@ -203,11 +226,6 @@ def main():
     lower_bound = Q1 - 1.5 * IQR 
     upper_bound = Q3 + 1.5 * IQR
 
-    
-    def is_outlier(value):
-        return value < lower_bound or value > upper_bound
-
-    # Identify outliers
     outliers_mask = (
         (merged_epias_data['systemMarginalPrice'] < lower_bound) | 
         (merged_epias_data['systemMarginalPrice'] > upper_bound)
@@ -217,7 +235,6 @@ def main():
   
     path = os.getenv('DATA_PATH')
     #data_cleaned.to_csv(path + "/data/processed/cleaned_epias_data.csv", index=True)
-    print("\nCleaned EPIAŞ data saved to CSV.")
 
 if __name__ == "__main__":
     main()
