@@ -16,7 +16,7 @@ def main():
         'upRegulationDelivered','downRegulationZeroCoded','downRegulationDelivered',
         'direction_Dengede', 'direction_Enerji Açığı','direction_Enerji Fazlası'
     ]
-    engineer.add_hourly_lags(columns_to_lag, lag_hours=24)
+    #engineer.add_hourly_lags(columns_to_lag, lag_hours=24)
     df_with_lags = engineer.df
 
     # Correlation Analysis
@@ -34,37 +34,37 @@ def main():
     y_train, y_test = y.iloc[:split_point], y.iloc[split_point:]
 
     # Initialize models
-    arima = ARIMAModel(order=(5,1,0))
-    xgb = XGBoostModel(n_estimators=200, max_depth=5, learning_rate=0.1)
-    sarima = SARIMAModel(order=(1,1,1), seasonal_order=(1,1,1,12))
-    rf = RandomForestModel(n_estimators=100, max_depth=10)
-    gb = GradientBoostingModel(n_estimators=100, learning_rate=0.1, max_depth=5)
+    #arima = ARIMAModel(order=(5,1,0))
+    xgb = XGBoostModel(n_estimators=600, max_depth=3, learning_rate=0.01)
+    #sarima = SARIMAModel(order=(1,1,1), seasonal_order=(1,1,1,12))
+    rf = RandomForestModel(n_estimators=600, max_depth=30)
+    gb = GradientBoostingModel(n_estimators=700, learning_rate=0.01, max_depth=7)
 
     # Fit models
-    arima.fit(y_train)
+    #arima.fit(y_train)
     xgb.fit(X_train, y_train)
     xgb_preds = xgb.predict(X_test)
-    sarima.fit(y_train)
+    #sarima.fit(y_train)
     rf.fit(X_train, y_train)
     gb.fit(X_train, y_train)               
 
     # Make predictions
-    arima_preds = arima.predict(steps=len(X_test))
+    #arima_preds = arima.predict(steps=len(X_test))
     xgb_preds = xgb.predict(X_test)
-    sarima_preds = sarima.predict(steps=len(X_test))
+    #sarima_preds = sarima.predict(steps=len(X_test))
     rf_preds = rf.predict(X_test)
     gb_preds = gb.predict(X_test)
 
     # Evaluate models
-    print('ARIMA Evaluation:',arima.evaluate(y_test, arima_preds))
+    #print('ARIMA Evaluation:',arima.evaluate(y_test, arima_preds))
     print('XGBoost Evaluation:',xgb.evaluate(y_test, xgb_preds))
-    print('SARIMA Evaluation:',sarima.evaluate(y_test, sarima_preds))
+    #print('SARIMA Evaluation:',sarima.evaluate(y_test, sarima_preds))
     print('Random Forest Evaluation:',rf.evaluate(y_test, rf_preds))
     print('Gradient Boosting Evaluation:',gb.evaluate(y_test, gb_preds))
 
-    arima.plot_results(y_test, arima_preds)
+    #arima.plot_results(y_test, arima_preds)
     xgb.plot_results(y_test, xgb_preds)
-    sarima.plot_results(y_test, sarima_preds)
+    #sarima.plot_results(y_test, sarima_preds)
     rf.plot_results(y_test, rf_preds)
     gb.plot_results(y_test, gb_preds)
 

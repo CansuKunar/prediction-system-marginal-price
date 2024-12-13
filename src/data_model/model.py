@@ -39,7 +39,7 @@ class BaseTimeSeriesModel(ABC):
         r2 = r2_score(y_true, y_pred)
         metrics = {'MAE': mae, 'MAE Percentage': mae_percentage, 'MAPE': mape, 
                    'RMSE': rmse, 'MASE': mase, 'R2': r2}
-        print(metrics)
+        return metrics
 
     def plot_results(self, y_true, y_pred):
         """

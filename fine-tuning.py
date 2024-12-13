@@ -17,7 +17,7 @@ def main():
         'upRegulationDelivered','downRegulationZeroCoded','downRegulationDelivered',
         'direction_Dengede', 'direction_Enerji Açığı','direction_Enerji Fazlası'
     ]
-    engineer.add_hourly_lags(columns_to_lag, lag_hours=24)
+    #engineer.add_hourly_lags(columns_to_lag, lag_hours=24)
     df_with_lags = engineer.df
     X = df_with_lags.drop(columns=['systemMarginalPrice'])
     y = df_with_lags['systemMarginalPrice']
@@ -30,7 +30,7 @@ def main():
 
     # Define parameter grids
     param_grid_xgb = {
-        'n_estimators': [100, 200, 300, 400, 500,600,700,800,900,1000],
+        'n_estimators': [100, 200, 300, 400, 500,600,700],
         'learning_rate': [0.01, 0.05, 0.1, 0.2],
         'max_depth': [3, 5, 7, 9],
     }
@@ -39,11 +39,11 @@ def main():
         'bootstrap': [True, False],
         'max_depth': [3, 5, 7, 9,10, 20, 30, 40, 50, 60, 70, 80, 90, 100, None],
         'max_features': ['auto', 'sqrt'],
-        'n_estimators': [200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000]    
+        'n_estimators': [200, 400, 600, 800, 1000]    
     }
 
     param_grid_gb = {
-        'n_estimators': [100, 200, 300, 400, 500,600,700,800,900,1000],
+        'n_estimators': [100, 200, 300, 400, 500,600,700],
         'learning_rate': [0.01, 0.05, 0.1, 0.2],
         'max_depth': [3, 5, 7, 9],
     }
@@ -61,11 +61,11 @@ def main():
 
     # Initialize GridSearchCV for each model with TimeSeriesSplit and MAPE
     grid_xgb = GridSearchCV(estimator=xgb.model, param_grid=param_grid_xgb, 
-                            cv=tscv, scoring=mape_scorer, n_jobs=-1,verbose=1)
+                            cv=tscv, scoring=mape_scorer, n_jobs=-1,verbose=10)
     grid_rf = GridSearchCV(estimator=rf.model, param_grid=param_grid_rf, 
-                           cv=tscv, scoring=mape_scorer, n_jobs=-1,verbose=1)
+                           cv=tscv, scoring=mape_scorer, n_jobs=-1,verbose=10)
     grid_gb = GridSearchCV(estimator=gb.model, param_grid=param_grid_gb, 
-                           cv=tscv, scoring=mape_scorer, n_jobs=-1,verbose=1)
+                           cv=tscv, scoring=mape_scorer, n_jobs=-1,verbose=10)
 
     # Fit GridSearchCV
     grid_xgb.fit(X_train, y_train)
